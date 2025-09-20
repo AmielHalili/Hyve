@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { DateRange } from "react-date-range";
 import type { Range } from "react-date-range";
@@ -7,7 +7,7 @@ import "react-date-range/dist/theme/default.css";
 
 const MOCK_EVENTS = [
   { id: "e1", title: "Coffee & Code", date: "2025-09-22", city: "San Francisco", tags: ["tech", "social"] },
-  { id: "e2", title: "Sunset Run Club", date: "2025-09-23", city: "San Francisco", tags: ["fitness"] },
+  { id: "e2", title: "Sunset Run Club", date: "2025-09-23", city: "Orlando", tags: ["fitness"] },
   { id: "e3", title: "Designers Meetup", date: "2025-09-25", city: "Oakland", tags: ["design", "networking"] },
 ];
 
@@ -18,6 +18,7 @@ type DateRangeType = {
 };
 
 export default function Discover() {
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
 
@@ -28,16 +29,43 @@ export default function Discover() {
     { startDate: null, endDate: null, key: "selection" },
   ]);
 
+  const calendarRef = useRef<HTMLDivElement>(null);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setShowCalendar(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const uniqueCities = Array.from(new Set(MOCK_EVENTS.map(e => e.city)));
 
+  // Filter events
   const filteredEvents = MOCK_EVENTS.filter(e => {
     const eventDate = new Date(e.date);
     const { startDate, endDate } = appliedRange[0];
 
+    // City filter
     if (selectedCity && e.city !== selectedCity) return false;
 
+    // Date filter (normalize to midnight)
     if (startDate && endDate) {
-      return eventDate >= startDate && eventDate <= endDate;
+      const event = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+      const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+      if (!(event >= start && event <= end)) return false;
+    }
+
+    // Search filter
+    const query = searchQuery.toLowerCase();
+    if (query) {
+      const titleMatch = e.title.toLowerCase().includes(query);
+      const tagMatch = e.tags.some(tag => tag.toLowerCase().includes(query));
+      if (!titleMatch && !tagMatch) return false;
     }
 
     return true;
@@ -58,10 +86,15 @@ export default function Discover() {
     <div>
       <h2 className="text-2xl font-semibold mb-4 text-[#F2F0EF]">Discover</h2>
       <div className="mb-4 flex flex-col md:flex-row gap-3 relative">
+        {/* Search input */}
         <input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
           className="border rounded px-3 py-2 w-full md:w-80 bg-[#2C4063] text-[#FFE485]"
           placeholder="Search by title or tag..."
         />
+
+        {/* City dropdown */}
         <select
           value={selectedCity}
           onChange={e => setSelectedCity(e.target.value)}
@@ -73,6 +106,7 @@ export default function Discover() {
           ))}
         </select>
 
+        {/* Date range picker button */}
         <button
           onClick={() => setShowCalendar(!showCalendar)}
           className="border rounded px-3 py-2 bg-[#2C4063] text-[#F2F0EF] text-left"
@@ -82,8 +116,9 @@ export default function Discover() {
             : "Pick a date"}
         </button>
 
+        {/* Calendar popup */}
         {showCalendar && (
-          <div className="absolute top-14 z-50 bg-white rounded shadow-lg p-3">
+          <div ref={calendarRef} className="absolute top-14 z-50 bg-white rounded shadow-lg p-3">
             <DateRange
               ranges={tempRange as Range[]}
               onChange={item => setTempRange([item.selection as DateRangeType])}
@@ -111,6 +146,7 @@ export default function Discover() {
         )}
       </div>
 
+      {/* Event list */}
       <div className="grid md:grid-cols-3 gap-4">
         {filteredEvents.length > 0 ? (
           filteredEvents.map(e => (
