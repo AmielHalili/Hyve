@@ -2,10 +2,11 @@ import { Link, NavLink } from "react-router-dom";
 
 export default function Header() {
   return (
-    <header className=" bg-[#1A2738] backdrop-blur sticky top-0 z-40 border-[#2C4063]">
+    <header className=" bg-[#FFFDF0] sticky top-0 z-40 ">
       <nav className="mx-auto max-w-6xl flex items-center justify-between p-4">
-        <Link to="/" className="text-xl font-bold text-[#FFD35C] hover:text-[#FFE485] transition-colors">
-          Hyve
+        <Link to="/" className="flex items-center gap-2 text-3xl font-bold text-[#FFD35C] hover:text-[#FFE485] transition-colors">
+          <img src="/images/Hyve.png" alt="Hyve logo" className="h-16 w-16 object-contain" />
+          <span>Hyve</span>
         </Link>
         <div className="flex gap-2 sm:gap-4">
           <NavLink
@@ -14,7 +15,7 @@ export default function Header() {
               `px-3 py-1 rounded transition-colors ${
                 isActive
                   ? "bg-[#FFD35C] text-[#2C4063] font-medium"
-                  : "text-[#FFE485] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+                  : "text-[#22343D] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
               }`
             }
           >
@@ -26,7 +27,7 @@ export default function Header() {
               `px-3 py-1 rounded transition-colors ${
                 isActive
                   ? "bg-[#FFD35C] text-[#2C4063] font-medium"
-                  : "text-[#FFE485] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+                  : "text-[#22343D] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
               }`
             }
           >
@@ -38,7 +39,7 @@ export default function Header() {
               `px-3 py-1 rounded transition-colors ${
                 isActive
                   ? "bg-[#FFD35C] text-[#2C4063] font-medium"
-                  : "text-[#FFE485] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+                  : "text-[#22343D] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
               }`
             }
           >
@@ -50,7 +51,7 @@ export default function Header() {
               `px-3 py-1 rounded transition-colors ${
                 isActive 
                   ? "bg-[#FFD35C] text-[#2C4063] font-medium" 
-                  : "text-[#FFE485] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+                  : "text-[#22343D] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
               }`
             }
           >
@@ -58,7 +59,7 @@ export default function Header() {
           </NavLink>
           <NavLink
             to="/signin"
-            className="px-3 py-1 rounded transition-colors text-[#FFE485] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+            className="px-3 py-1 rounded transition-colors bg-[#FFD35C] text-[#22343D] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
           >
             Sign in
           </NavLink>

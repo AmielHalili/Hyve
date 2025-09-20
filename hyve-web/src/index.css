@@ -3,12 +3,7 @@
 @tailwind utilities;
 
 
-:root{
---hyve-yellow: #FFD35C;
---hyve-pale: #FFE485;
---hyve-green: #12EE47; /* assumed */
---hyve-navy: #2C4063;
-}
+
 
 
 html, body, #root { height: 100%; }
