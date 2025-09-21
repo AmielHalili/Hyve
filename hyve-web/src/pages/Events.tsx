@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { PREMADE_TAGS } from "../data/premadeTags";
+import { useAuthStore } from "../store/auth";
 
 type EventRow = {
   id: string;
@@ -21,6 +22,8 @@ export default function Events() {
   const [loc, setLoc] = useState("");
   const [when, setWhen] = useState<"any" | "today" | "7d" | "month">("any");
   const [tag, setTag] = useState<string | null>(null);
+  const [joinedIds, setJoinedIds] = useState<Set<string>>(new Set());
+  const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
     (async () => {
@@ -48,6 +51,18 @@ export default function Events() {
       setLoading(false);
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (!user) { setJoinedIds(new Set()); return; }
+      const { data } = await supabase
+        .from('event_rsvps')
+        .select('event_id')
+        .eq('user_id', user.id);
+      const s = new Set<string>((data ?? []).map((r: any) => r.event_id));
+      setJoinedIds(s);
+    })();
+  }, [user?.id]);
 
   const filtered = events.filter((e) => {
     const q = query.trim().toLowerCase();
@@ -125,11 +140,16 @@ export default function Events() {
       <div className="grid md:grid-cols-3 gap-4">
         {filtered.map((e) => (
           <Link to={`/events/${e.slug}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#2C4063]">
-            {e.cover_url ? (
-              <img src={e.cover_url} alt="" className="aspect-video w-full object-cover rounded-lg mb-3" />
-            ) : (
-              <div className="aspect-video rounded-lg bg-gray-200 mb-3" />
-            )}
+            <div className="relative mb-3">
+              {e.cover_url ? (
+                <img src={e.cover_url} alt="" className="aspect-video w-full object-cover rounded-lg" />
+              ) : (
+                <div className="aspect-video rounded-lg bg-gray-200" />
+              )}
+              {joinedIds.has(e.id) && (
+                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#FFD35C] text-[#22343D] text-xs font-medium">Joined</span>
+              )}
+            </div>
             <div className="font-medium text-[#FFD35C]">{e.title}</div>
             <div className="text-[#FFE485] text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
             {e.tags?.length > 0 && (

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAuthStore } from "../store/auth";
 
 type EventRow = {
   id: string;
@@ -17,6 +18,10 @@ export default function EventDetail() {
   const { slug } = useParams();
   const [event, setEvent] = useState<EventRow | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rsvpCount, setRsvpCount] = useState<number>(0);
+  const [hasRsvped, setHasRsvped] = useState<boolean>(false);
+  const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!slug) return;
@@ -42,9 +47,16 @@ export default function EventDetail() {
           images: e.images ?? [],
         };
         setEvent(mapped);
+        // fetch rsvp count and user status
+        const [{ count }, { data: my }] = await Promise.all([
+          supabase.from("event_rsvps").select("event_id", { count: "exact", head: true }).eq("event_id", e.id),
+          user ? supabase.from("event_rsvps").select("event_id").eq("event_id", e.id).eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }) as any,
+        ]);
+        setRsvpCount((count as number) || 0);
+        setHasRsvped(!!my);
       }
     })();
-  }, [slug]);
+  }, [slug, user?.id]);
 
   if (error) return <p className="text-red-400">{error}</p>;
   if (!event) return <p className="text-[#FFE485]">Loading…</p>;
@@ -80,8 +92,31 @@ export default function EventDetail() {
         {/* Additional image uploads disabled */}
       </div>
       <aside className="border rounded-xl p-4 h-fit bg-[#2C4063]">
-        <div className="text-xl font-semibold mb-2 text-[#FFD35C]">RSVPs coming soon</div>
-        <button className="w-full px-4 py-2 rounded bg-[#FFD35C] text-[#2C4063]">RSVP</button>
+        <div className="text-xl font-semibold mb-2 text-[#FFD35C]">{rsvpCount} going</div>
+        <button
+          className={`w-full px-4 py-2 rounded ${hasRsvped ? 'bg-[#2C4063] border border-[#FFD35C] text-[#FFD35C]' : 'bg-[#FFD35C] text-[#2C4063]'}`}
+          onClick={async () => {
+            if (!user) {
+              navigate('/signin', { replace: false });
+              return;
+            }
+            if (hasRsvped) {
+              const { error } = await supabase.from('event_rsvps').delete().eq('event_id', event.id).eq('user_id', user.id);
+              if (!error) {
+                setHasRsvped(false);
+                setRsvpCount((c) => Math.max(0, c - 1));
+              }
+            } else {
+              const { error } = await supabase.from('event_rsvps').insert({ event_id: event.id, user_id: user.id });
+              if (!error) {
+                setHasRsvped(true);
+                setRsvpCount((c) => c + 1);
+              }
+            }
+          }}
+        >
+          {hasRsvped ? 'Leave RSVP' : 'RSVP'}
+        </button>
         <button className="w-full mt-2 px-4 py-2 rounded border text-[#FFD35C]">Share</button>
       </aside>
     </div>

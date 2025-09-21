@@ -148,3 +148,29 @@ Onboarding flow
 
 - The Sign Up page collects name/email/password and navigates to `/onboarding/interests`.
 - The onboarding page upserts the user's profile with `full_name` and `onboarding_complete=true`, upserts selected tags into `public.tags` with `owner_id = auth.uid()`, and navigates to Dashboard.
+
+RSVPs
+
+```sql
+create table if not exists public.event_rsvps (
+  event_id uuid not null references public.events(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (event_id, user_id)
+);
+
+alter table public.event_rsvps enable row level security;
+
+drop policy if exists rsvps_select_public on public.event_rsvps;
+drop policy if exists rsvps_insert_auth on public.event_rsvps;
+drop policy if exists rsvps_delete_own on public.event_rsvps;
+
+-- Anyone can read RSVP counts
+create policy rsvps_select_public on public.event_rsvps for select using ( true );
+
+-- Any authenticated user can RSVP
+create policy rsvps_insert_auth on public.event_rsvps for insert with check ( auth.uid() = user_id );
+
+-- A user can remove their own RSVP
+create policy rsvps_delete_own on public.event_rsvps for delete using ( auth.uid() = user_id );
+```

@@ -19,6 +19,17 @@ export default function Dashboard() {
   }[]>([]);
   const [hostErr, setHostErr] = useState<string | null>(null);
   const [hostLoading, setHostLoading] = useState(false);
+  const [showRsvps, setShowRsvps] = useState(false);
+  const [rsvps, setRsvps] = useState<{
+    id: string;
+    slug: string | null;
+    title: string;
+    location: string;
+    starts_at: string;
+    cover_url: string | null;
+  }[]>([]);
+  const [rsvpErr, setRsvpErr] = useState<string | null>(null);
+  const [rsvpLoading, setRsvpLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -84,7 +95,22 @@ export default function Dashboard() {
         <div className="grid md:grid-cols-3 gap-4">
           <div className="border rounded-xl p-4 bg-[#2C4063]">
             <b className="text-[#FFD35C]">RSVPs</b>
-            <p className="text-[#FFE485]">3 upcoming</p>
+            <button onClick={async () => {
+              if (!user) return;
+              const next = !showRsvps;
+              setShowRsvps(next);
+              if (next && rsvps.length === 0) {
+                setRsvpLoading(true);
+                setRsvpErr(null);
+                const { data, error } = await supabase
+                  .from('event_rsvps')
+                  .select('events:events(id,slug,title,location,starts_at,cover_url)')
+                  .eq('user_id', user.id);
+                if (error) setRsvpErr(error.message);
+                else setRsvps((data ?? []).map((row: any) => row.events));
+                setRsvpLoading(false);
+              }
+            }} className="block text-left text-[#FFE485] underline mt-1">{showRsvps ? 'Hide' : 'Show'} my RSVPs</button>
           </div>
           <button onClick={handleShowHosted} className="text-left border rounded-xl p-4 bg-[#2C4063] hover:bg-[#2C4063]/90 focus:outline-none focus:ring-2 focus:ring-[#FFD35C]">
             <b className="text-[#FFD35C]">Hosted</b>
@@ -96,6 +122,33 @@ export default function Dashboard() {
           </div>
           
         </div>
+        {showRsvps && (
+          <div className="border rounded-xl p-4 bg-[#2C4063]">
+            <b className="text-[#FFD35C]">My RSVPs</b>
+            {rsvpLoading && <p className="text-[#FFE485] text-sm mt-2">Loading…</p>}
+            {rsvpErr && <p className="text-red-300 text-sm mt-2">{rsvpErr}</p>}
+            {!rsvpLoading && !rsvpErr && (
+              <div className="mt-3 grid sm:grid-cols-2 gap-3">
+                {rsvps.map((e) => (
+                  <Link key={e.id} to={`/events/${e.slug ?? e.id}`} className="flex gap-3 p-2 rounded hover:bg-white/5">
+                    {e.cover_url ? (
+                      <img src={e.cover_url} alt="" className="w-20 h-14 object-cover rounded" />
+                    ) : (
+                      <div className="w-20 h-14 bg-gray-600/40 rounded" />
+                    )}
+                    <div>
+                      <div className="text-[#FFD35C] font-medium">{e.title}</div>
+                      <div className="text-[#FFE485] text-xs">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
+                    </div>
+                  </Link>
+                ))}
+                {rsvps.length === 0 && (
+                  <p className="text-[#FFE485] text-sm">You haven’t RSVPed to any events yet.</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {showHosted && (
           <div className="border rounded-xl p-4 bg-[#2C4063]">
             <b className="text-[#FFD35C]">My hosted events</b>
