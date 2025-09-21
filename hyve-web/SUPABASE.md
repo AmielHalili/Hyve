@@ -174,3 +174,68 @@ create policy rsvps_insert_auth on public.event_rsvps for insert with check ( au
 -- A user can remove their own RSVP
 create policy rsvps_delete_own on public.event_rsvps for delete using ( auth.uid() = user_id );
 ```
+
+Connections
+
+```sql
+create table if not exists public.user_connections (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  peer_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, peer_id)
+);
+
+alter table public.user_connections enable row level security;
+
+drop policy if exists conns_select_own on public.user_connections;
+drop policy if exists conns_insert_own on public.user_connections;
+drop policy if exists conns_delete_own on public.user_connections;
+
+-- A user can see rows where they are involved
+create policy conns_select_own on public.user_connections for select using (
+  auth.uid() = user_id or auth.uid() = peer_id
+);
+
+-- A user can connect to someone (creates a directed edge)
+create policy conns_insert_own on public.user_connections for insert with check (
+  auth.uid() = user_id and user_id <> peer_id
+);
+
+-- Allow disconnecting
+create policy conns_delete_own on public.user_connections for delete using (
+  auth.uid() = user_id or auth.uid() = peer_id
+);
+```
+
+Friend requests
+
+```sql
+create table if not exists public.connection_requests (
+  requester_id uuid not null references auth.users(id) on delete cascade,
+  recipient_id uuid not null references auth.users(id) on delete cascade,
+  status text not null default 'pending', -- 'pending' | 'accepted' | 'declined'
+  created_at timestamptz not null default now(),
+  primary key (requester_id, recipient_id)
+);
+
+alter table public.connection_requests enable row level security;
+
+drop policy if exists connreq_select_involved on public.connection_requests;
+drop policy if exists connreq_insert_self on public.connection_requests;
+drop policy if exists connreq_update_recipient on public.connection_requests;
+
+-- Users can see requests they are involved in
+create policy connreq_select_involved on public.connection_requests for select using (
+  auth.uid() = requester_id or auth.uid() = recipient_id
+);
+
+-- Only requester can create a request
+create policy connreq_insert_self on public.connection_requests for insert with check (
+  auth.uid() = requester_id and requester_id <> recipient_id
+);
+
+-- Only the recipient can update (accept/decline)
+create policy connreq_update_recipient on public.connection_requests for update using (
+  auth.uid() = recipient_id
+);
+```

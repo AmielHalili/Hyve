@@ -1,5 +1,6 @@
 import ScrollVelocity from './ScrollVelocity';
 import CountUp from './CountUp';
+import SplitText from '../components/SplitText';
 
 export default function Home() {
   return (
@@ -18,7 +19,22 @@ export default function Home() {
         <div className="space-y-4">
           <div className="flex items-center gap-4">
             <img src="/images/Hyve.png" alt="Hyve logo" className="h-28 w-28 md:h-80 md:w-80 object-contain" />
-            <span className="text-5xl md:text-7xl font-extrabold text-[#22343D]">Hyve</span>
+            <SplitText
+              text="Hyve"
+              className="text-5xl md:text-8xl font-extrabold text-[#22343D] py-10"
+              delay={300}
+              duration={0.8}
+              ease="power3.out"
+              splitType="chars"
+              from={{ opacity: 0, y: 40 }}
+              to={{ opacity: 1, y: 0 }}
+              threshold={0.1}
+              rootMargin="-100px"
+              textAlign="left"
+              onLetterAnimationComplete={() => {
+                console.log('All letters have animated!');
+              }}
+            />
           </div>
           <h1 className="text-3xl md:text-4xl font-semibold text-[#22343D]">
             The networking hub for professionals.

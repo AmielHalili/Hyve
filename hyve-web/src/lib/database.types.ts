@@ -128,6 +128,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_connections: {
+        Row: {
+          user_id: string;
+          peer_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          peer_id: string;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          peer_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      connection_requests: {
+        Row: {
+          requester_id: string;
+          recipient_id: string;
+          status: string;
+          created_at: string;
+        };
+        Insert: {
+          requester_id: string;
+          recipient_id: string;
+          status?: string;
+          created_at?: string;
+        };
+        Update: {
+          requester_id?: string;
+          recipient_id?: string;
+          status?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           id: string;

@@ -8,7 +8,7 @@ type AuthState = {
   loading: boolean;
   init: () => Promise<void>;
   signInWithPassword: (email: string, password: string) => Promise<{ error?: string }>;
-  signUpWithPassword:  (email: string, password: string) => Promise<{ error?: string }>;
+  signUpWithPassword:  (email: string, password: string, name?: string) => Promise<{ error?: string }>;
   signInWithOAuth: (provider: "google" | "github") => Promise<void>;
   sendMagicLink: (email: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -36,10 +36,21 @@ signInWithPassword: async (email, password) => {
   },
   
 
-  signUpWithPassword: async (email, password) => {
-    const { error } = await supabase.auth.signUp({ email, password });
-    // If email confirmation is ON, user must confirm before session exists
-    return error ? { error: error.message } : {};
+  signUpWithPassword: async (email, password, name) => {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return { error: error.message };
+    try {
+      const uid = data.user?.id ?? null;
+      const hasSession = !!data.session;
+      if (uid && hasSession) {
+        // Save profile immediately when session exists
+        await supabase.from('profiles').upsert({ id: uid, full_name: name ?? null }, { onConflict: 'id' });
+      } else if (name) {
+        // Fallback: cache name until session exists (handled in AppBoot)
+        localStorage.setItem('hyve_full_name', name);
+      }
+    } catch {}
+    return {};
   },
 
   signInWithOAuth: async (provider) => {

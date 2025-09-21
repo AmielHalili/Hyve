@@ -17,7 +17,7 @@ export default function SignUp() {
   const onSubmit = async ({ name, email, password }: Form) => {
     setErr(null);
     setInfo(null);
-    const res = await signUpWithPassword(email, password);
+    const res = await signUpWithPassword(email, password, name);
     if (res.error) {
       setErr(res.error);
     } else {
