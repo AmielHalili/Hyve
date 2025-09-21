@@ -1,0 +1,23 @@
+export const PREMADE_TAGS = [
+  "Running",
+  "Hiking",
+  "Cycling",
+  "Yoga",
+  "Photography",
+  "Cooking",
+  "Coffee",
+  "Board Games",
+  "Coding",
+  "Design",
+  "Music",
+  "Art",
+  "Meditation",
+  "Volunteering",
+  "Startups",
+  "Book Club",
+  "Language Exchange",
+  "Gardening",
+  "Tennis",
+  "Pickleball",
+];
+
