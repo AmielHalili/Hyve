@@ -68,6 +68,20 @@ export default function Host() {
 
       if (error || !created) throw error ?? new Error("Failed to create event");
 
+      // Award XP for hosting an event (+50xp)
+      try {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('xp')
+          .eq('id', user.id)
+          .maybeSingle();
+        const currentXp = (prof as any)?.xp ?? 0;
+        await supabase
+          .from('profiles')
+          .update({ xp: (currentXp as number) + 50 } as any)
+          .eq('id', user.id);
+      } catch {}
+
       // Upload images to Storage and update DB
       const bucket = "event-images";
       if (coverFile) {

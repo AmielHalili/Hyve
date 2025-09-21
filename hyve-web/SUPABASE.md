@@ -239,3 +239,50 @@ create policy connreq_update_recipient on public.connection_requests for update 
   auth.uid() = recipient_id
 );
 ```
+
+XP / Leveling System
+
+To enable levels based on XP:
+
+1) Add XP column to profiles
+
+```sql
+alter table public.profiles
+  add column if not exists xp integer not null default 0;
+```
+
+2) (Optional) Audit XP changes
+
+```sql
+create table if not exists public.xp_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  delta integer not null,
+  reason text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists xp_events_user_idx on public.xp_events(user_id);
+```
+
+3) (Optional) Convenience function to award XP atomically
+
+```sql
+create or replace function public.award_xp(p_user uuid, p_delta integer, p_reason text)
+returns void
+language plpgsql
+as $$
+begin
+  update public.profiles set xp = coalesce(xp,0) + p_delta where id = p_user;
+  insert into public.xp_events(user_id, delta, reason) values (p_user, p_delta, p_reason);
+end;
+$$;
+```
+
+App behavior once `xp` exists:
+- New signups initialize at 50 XP (src/store/auth.tsx).
+- Hosting an event adds +50 XP (src/pages/Host.tsx) — can be swapped for `rpc('award_xp', ...)` if you added the function.
+- Dashboard shows Level and progress computed from total XP (src/lib/xp.ts and src/pages/Dashboard.tsx).
+- Accepting a connection request awards +10 XP to both users (src/pages/Dashboard.tsx).
+
+Level rules (in code):
+- Level 1 requires 100 XP; each next level requires +25 more than the previous (L2 +125, L3 +150, …). Level is computed from total XP by summing this series.

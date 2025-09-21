@@ -3,12 +3,14 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
 import { supabase } from "../lib/supabase";
 import { PREMADE_TAGS } from "../data/premadeTags";
+import { computeLevel } from "../lib/xp";
 
 export default function Dashboard() {
   const user = useAuthStore(s => s.user);
   const [tags, setTags] = useState<{ id: string; name: string }[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [fullName, setFullName] = useState<string | null>(null);
+  const [xp, setXp] = useState<number>(0);
   const [showSettings, setShowSettings] = useState(false);
   const [settingsName, setSettingsName] = useState('');
   const [savingName, setSavingName] = useState(false);
@@ -60,10 +62,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      if (!user) { setFullName(null); return; }
-      const { data } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
-      setFullName((data as any)?.full_name ?? null);
-      setSettingsName((data as any)?.full_name ?? '');
+      if (!user) { setFullName(null); setXp(0); return; }
+      // Try to fetch full_name and xp; fall back to full_name only if xp column doesn't exist
+      let prof: any = null;
+      const res = await supabase.from('profiles').select('full_name,xp').eq('id', user.id).maybeSingle();
+      if (res.error) {
+        const res2 = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle();
+        prof = res2.data ?? null;
+      } else {
+        prof = res.data ?? null;
+      }
+      setFullName(prof?.full_name ?? null);
+      setSettingsName(prof?.full_name ?? '');
+      setXp(Math.max(0, prof?.xp ?? 0));
     })();
   }, [user?.id]);
 
@@ -145,6 +156,20 @@ export default function Dashboard() {
         { user_id: user.id, peer_id: requesterId },
         { user_id: requesterId, peer_id: user.id },
       ]);
+      // Award XP (+10) to both users for a successful connection
+      try {
+        // Current user
+        const { data: me } = await supabase.from('profiles').select('xp').eq('id', user.id).maybeSingle();
+        const myXp = (me as any)?.xp ?? 0;
+        await supabase.from('profiles').update({ xp: (myXp as number) + 10 } as any).eq('id', user.id);
+        setXp((prev) => (Number.isFinite(prev) ? prev + 10 : (myXp as number) + 10));
+      } catch {}
+      try {
+        // Requester user
+        const { data: other } = await supabase.from('profiles').select('xp').eq('id', requesterId).maybeSingle();
+        const otherXp = (other as any)?.xp ?? 0;
+        await supabase.from('profiles').update({ xp: (otherXp as number) + 10 } as any).eq('id', requesterId);
+      } catch {}
       setIncomingReqs((cur) => cur.filter((r) => r.requester_id !== requesterId));
       setConnectedIds((s) => new Set([...Array.from(s), requesterId]));
     }
@@ -230,6 +255,31 @@ export default function Dashboard() {
           </button>
         )}
       </div>
+      {/* Level summary */}
+      {user && (
+        <div className="border rounded-xl p-4 bg-[#2C4063]">
+          {(() => {
+            const info = computeLevel(xp);
+            return (
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-[#FFE485] text-sm">Level</div>
+                  <div className="text-[#FFD35C] text-2xl font-semibold">{info.level}</div>
+                  <div className="text-[#FFE485] text-xs">XP: {info.totalXp}</div>
+                </div>
+                <div className="flex-1">
+                  <div className="h-2 w-full bg-[#1F2E48] rounded overflow-hidden">
+                    <div className="h-full bg-[#FFD35C]" style={{ width: `${Math.round(info.progress * 100)}%` }} />
+                  </div>
+                  <div className="mt-1 text-[#FFE485] text-xs">
+                    {info.xpIntoLevel}/{info.xpForNextLevel} to next level
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
       {showSettings && user && (
         <div className="mt-3 border rounded-xl p-4 bg-[#2C4063]">
           <div className="grid gap-3 md:grid-cols-2">

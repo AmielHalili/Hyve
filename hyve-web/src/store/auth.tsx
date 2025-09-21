@@ -44,7 +44,8 @@ signInWithPassword: async (email, password) => {
       const hasSession = !!data.session;
       if (uid && hasSession) {
         // Save profile immediately when session exists
-        await supabase.from('profiles').upsert({ id: uid, full_name: name ?? null }, { onConflict: 'id' });
+        // Initialize XP to 50 for new users
+        await supabase.from('profiles').upsert({ id: uid, full_name: name ?? null, xp: 50 } as any, { onConflict: 'id' });
       } else if (name) {
         // Fallback: cache name until session exists (handled in AppBoot)
         localStorage.setItem('hyve_full_name', name);
