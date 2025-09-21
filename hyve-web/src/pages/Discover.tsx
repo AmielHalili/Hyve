@@ -11,17 +11,17 @@ export default function Discover() {
     <div>
       <h2 className="text-2xl font-semibold mb-4 text-[#FFD35C]">Discover</h2>
       <div className="mb-4 flex gap-3">
-        <input className="border rounded px-3 py-2 w-full md:w-80 bg-[#2C4063] text-[#FFE485]" placeholder="Search by title or tag..." />
-        <select className="border rounded px-3 py-2 bg-[#2C4063] text-[#FFE485]">
+        <input className="border rounded px-3 py-2 w-full md:w-80 bg-[#ADACA3] text-[#FFE485]" placeholder="Search by title or tag..." />
+        <select className="border rounded px-3 py-2 bg-[#ADACA3] text-[#FFE485]">
           <option>Anywhere</option>
           <option>San Francisco</option>
           <option>Oakland</option>
         </select>
-        <input className="border rounded px-3 py-2 bg-[#2C4063] text-[#FFE485]" type="date" />
+        <input className="border rounded px-3 py-2 bg-[#ADACA3] text-[#FFE485]" type="date" />
       </div>
       <div className="grid md:grid-cols-3 gap-4">
         {MOCK_EVENTS.map(e => (
-          <Link to={`/events/${e.id}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#2C4063]">
+          <Link to={`/events/${e.id}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#ADACA3] ">
             <div className="aspect-video rounded-lg bg-gray-200 mb-3" />
             <div className="font-medium text-[#FFD35C]">{e.title}</div>
             <div className="text-[#FFE485] text-sm">{e.city} · {new Date(e.date).toLocaleDateString()}</div>

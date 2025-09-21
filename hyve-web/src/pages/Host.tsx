@@ -133,7 +133,7 @@ export default function Host() {
     return (
       <div className="max-w-xl space-y-3">
         <h2 className="text-2xl font-semibold text-[#FFD35C]">Host an event</h2>
-        <p className="text-[#FFE485]">You must be signed in to create an event.</p>
+        <p className="text-[#22343D]">You must be signed in to create an event.</p>
         <Link to="/signin" className="px-4 py-2 inline-block rounded bg-[#FFD35C] text-[#2C4063]">Sign in</Link>
       </div>
     );
@@ -142,15 +142,15 @@ export default function Host() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-3">
       <h2 className="text-2xl font-semibold text-[#FFD35C]">Host an event</h2>
-      <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" placeholder="Title" {...register("title", { required: true })} />
+      <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]" placeholder="Title" {...register("title", { required: true })} />
       <div className="grid grid-cols-2 gap-3">
-        <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" type="date" {...register("date", { required: true })} />
-        <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" type="time" {...register("time", { required: true })} />
+        <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]" type="date" {...register("date", { required: true })} />
+        <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]" type="time" {...register("time", { required: true })} />
       </div>
-      <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" placeholder="Location" {...register("location", { required: true })} />
-      <textarea className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" placeholder="Description" rows={5} {...register("description")}></textarea>
+      <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]" placeholder="Location" {...register("location", { required: true })} />
+      <textarea className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]" placeholder="Description" rows={5} {...register("description")}></textarea>
       <div>
-        <p className="text-[#FFE485] mb-2">Select tags</p>
+        <p className="font-semibold text-[#FFD35C] mb-2">Select tags</p>
         <div className="flex flex-wrap gap-2">
           {PREMADE_TAGS.map((t) => (
             <button
@@ -160,7 +160,7 @@ export default function Host() {
               className={`px-3 py-1 rounded-full border text-sm ${
                 selected.includes(t)
                   ? "bg-[#FFD35C] text-[#22343D] border-transparent"
-                  : "text-[#FFE485] border-[#FFD35C] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+                  : "text-[#22343D] border-[#FFD35C] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
               }`}
             >
               {t}
@@ -170,7 +170,7 @@ export default function Host() {
       </div>
       <div className="grid md:grid-cols-2 gap-3">
         <div>
-          <p className="text-[#FFE485] mb-2">Cover image</p>
+          <p className="font-semibold text-[#FFE485] mb-2">Cover image</p>
           <input
             type="file"
             accept="image/*"
@@ -179,7 +179,7 @@ export default function Host() {
           />
         </div>
         <div>
-          <p className="text-[#FFE485] mb-2">Gallery images</p>
+          <p className="= font-semibold text-[#FFE485] mb-2">Gallery images</p>
           <input
             type="file"
             accept="image/*"

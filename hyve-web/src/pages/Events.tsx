@@ -79,19 +79,19 @@ export default function Events() {
       <h2 className="text-2xl font-semibold mb-4 text-[#FFD35C]">Discover</h2>
       <div className="mb-4 grid gap-2 md:grid-cols-4">
         <input
-          className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]"
+          className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]"
           placeholder="Search by title…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <input
-          className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]"
+          className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D]"
           placeholder="Filter by location…"
           value={loc}
           onChange={(e) => setLoc(e.target.value)}
         />
         <select
-          className="border rounded px-3 py-2 bg-[#2C4063] text-[#FFE485]"
+          className="border rounded px-3 py-2 bg-[#FCF6E8] text-[#22343D]"
           value={when}
           onChange={(e) => setWhen(e.target.value as any)}
         >
@@ -101,7 +101,7 @@ export default function Events() {
           <option value="month">This month</option>
         </select>
         <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-[#FFE485] text-sm">Tags:</span>
+          <span className="text-[#22343D] text-sm">Tags:</span>
           <div className="flex gap-2 overflow-x-auto">
             {PREMADE_TAGS.slice(0, 10).map((t) => (
               <button
@@ -111,7 +111,7 @@ export default function Events() {
                 className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
                   tag === t
                     ? "bg-[#FFD35C] text-[#22343D] border-transparent"
-                    : "text-[#FFE485] border-[#FFD35C] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
+                    : "text-[#22343D] border-[#FFD35C] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
                 }`}
               >
                 {t}
@@ -120,18 +120,18 @@ export default function Events() {
           </div>
         </div>
       </div>
-      {loading && <p className="text-[#FFE485]">Loading…</p>}
+      {loading && <p className="text-[#22343D]">Loading…</p>}
       {error && <p className="text-red-400">{error}</p>}
       <div className="grid md:grid-cols-3 gap-4">
         {filtered.map((e) => (
-          <Link to={`/events/${e.slug}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#2C4063]">
+          <Link to={`/events/${e.slug}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#FCF6E8]">
             {e.cover_url ? (
               <img src={e.cover_url} alt="" className="aspect-video w-full object-cover rounded-lg mb-3" />
             ) : (
               <div className="aspect-video rounded-lg bg-gray-200 mb-3" />
             )}
-            <div className="font-medium text-[#FFD35C]">{e.title}</div>
-            <div className="text-[#FFE485] text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
+            <div className="font-medium text-[#22343D] hover:text-yellow ">{e.title}</div>
+            <div className="text-[#22343D] text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
             {e.tags?.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {e.tags.map((t) => (

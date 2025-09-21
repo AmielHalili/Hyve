@@ -56,11 +56,11 @@ export default function EventDetail() {
         {event.cover_url ? (
           <img src={event.cover_url} alt="" className="aspect-video w-full object-cover rounded-xl" />
         ) : (
-          <div className="aspect-video rounded-xl bg-[#2C4063]" />
+          <div className="aspect-video rounded-xl bg-[#FCF6E8]" />
         )}
         <h2 className="text-2xl font-semibold text-[#FFD35C]">{event.title}</h2>
-        <p className="text-[#FFE485]">{new Date(event.starts_at).toLocaleString()} · {event.location}</p>
-        <p className="text-[#F2F0EF]">{event.description}</p>
+        <p className="text-[#22343D]">{new Date(event.starts_at).toLocaleString()} · {event.location}</p>
+        <p className="text-[#22343D]">{event.description}</p>
         {event.tags?.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {event.tags.map((t) => (
@@ -79,10 +79,11 @@ export default function EventDetail() {
         )}
         {/* Additional image uploads disabled */}
       </div>
-      <aside className="border rounded-xl p-4 h-fit bg-[#2C4063]">
-        <div className="text-xl font-semibold mb-2 text-[#FFD35C]">RSVPs coming soon</div>
+      
+      <aside className="border rounded-xl p-4 h-fit bg-[#FCF6E8]">
+        <div className="text-xl font-semibold mb-2 text-[#22343D]">RSVPs coming soon</div>
         <button className="w-full px-4 py-2 rounded bg-[#FFD35C] text-[#2C4063]">RSVP</button>
-        <button className="w-full mt-2 px-4 py-2 rounded border text-[#FFD35C]">Share</button>
+        <button className="w-full mt-2 px-4 py-2 rounded border text-[#22343D] ">Share</button>
       </aside>
     </div>
   );

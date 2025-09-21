@@ -41,6 +41,8 @@ export default function Dashboard() {
     }
   };
 
+ 
+
   const handleShowHosted = async () => {
     if (!user) return;
     const next = !showHosted;
@@ -64,7 +66,7 @@ export default function Dashboard() {
       {!user && <p className="text-[#22343D]">Sign in first to see your events.</p>}
       {user && (
         <>
-        <div className="border rounded-xl p-4 bg-[#2C4063] md:col-span-3">
+        <div className="border rounded-xl p-4 bg-[#FCF6E8] md:col-span-3">
             <b className="text-[#FFD35C]">Your interests</b>
             {err && <p className="text-red-300 text-sm">{err}</p>}
             <div className="mt-2 flex flex-wrap gap-2">
@@ -75,31 +77,31 @@ export default function Dashboard() {
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {PREMADE_TAGS.map((t) => (
-                <button key={t} onClick={() => addTag(t)} className="px-3 py-1 rounded-full border text-[#FFE485] border-[#FFD35C] text-sm hover:bg-[#FFD35C] hover:text-[#22343D]">
+                <button key={t} onClick={() => addTag(t)} className="px-3 py-1 rounded-full border text-[#22343D] border-[#FFD35C] text-sm hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]">
                   + {t}
                 </button>
               ))}
             </div>
           </div>
         <div className="grid md:grid-cols-3 gap-4">
-          <div className="border rounded-xl p-4 bg-[#2C4063]">
+          <div className="border rounded-xl p-4 bg-[#FCF6E8] hover:bg-[#FFD35C]/30 focus:outline-none focus:ring-2 focus:ring-[#FFD35C]">
             <b className="text-[#FFD35C]">RSVPs</b>
-            <p className="text-[#FFE485]">3 upcoming</p>
+            <p className="text-[#22343D]">3 upcoming</p>
           </div>
-          <button onClick={handleShowHosted} className="text-left border rounded-xl p-4 bg-[#2C4063] hover:bg-[#2C4063]/90 focus:outline-none focus:ring-2 focus:ring-[#FFD35C]">
+          <button onClick={handleShowHosted} className="text-left border rounded-xl p-4 bg-[#FCF6E8] hover:bg-[#FFD35C]/30 focus:outline-none focus:ring-2 focus:ring-[#FFD35C]">
             <b className="text-[#FFD35C]">Hosted</b>
-            <p className="text-[#FFE485]">{showHosted ? "Hide" : "Show"} my events</p>
+            <p className="text-[#22343D]">{showHosted ? "Hide" : "Show"} my events</p>
           </button>
-          <div className="border rounded-xl p-4 bg-[#2C4063]">
+          <div className="border rounded-xl p-4 bg-[#FCF6E8] hover:bg-[#FFD35C]/30 focus:outline-none focus:ring-2 focus:ring-[#FFD35C]">
             <b className="text-[#FFD35C]">Invites</b>
-            <p className="text-[#FFE485]">2 awaiting response</p>
+            <p className="text-[#22343D]">2 awaiting response</p>
           </div>
           
         </div>
         {showHosted && (
-          <div className="border rounded-xl p-4 bg-[#2C4063]">
-            <b className="text-[#FFD35C]">My hosted events</b>
-            {hostLoading && <p className="text-[#FFE485] text-sm mt-2">Loading…</p>}
+          <div className="border rounded-xl p-4 bg-[#FCF6E8]">
+            <b className="text-xl text-[#FFD35C]">My hosted events</b>
+            {hostLoading && <p className="text-[#22343D] text-sm mt-2">Loading…</p>}
             {hostErr && <p className="text-red-300 text-sm mt-2">{hostErr}</p>}
             {!hostLoading && !hostErr && (
               <div className="mt-3 grid sm:grid-cols-2 gap-3">
@@ -112,7 +114,7 @@ export default function Dashboard() {
                     )}
                     <div>
                       <div className="text-[#FFD35C] font-medium">{e.title}</div>
-                      <div className="text-[#FFE485] text-xs">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
+                      <div className="text-[#22343D] text-xs">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
                     </div>
                   </Link>
                 ))}
