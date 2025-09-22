@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
+import { getBaseUrl } from "../lib/url";
 
 type User = { id: string; email: string | null } | null;
 
@@ -57,7 +58,7 @@ signInWithPassword: async (email, password) => {
   signInWithOAuth: async (provider) => {
     await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: `${getBaseUrl()}/auth/callback` },
     });
   },
 

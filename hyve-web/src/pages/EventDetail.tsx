@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuthStore } from "../store/auth";
+import { getBaseUrl } from "../lib/url";
 
 type EventRow = {
   id: string;
@@ -66,7 +67,7 @@ export default function EventDetail() {
   const isOwner = !!user && event?.owner_id === user.id;
   const attendUrl = (!slug || !event?.attend_token)
     ? ''
-    : `${window.location.origin}/events/${slug}/attend?t=${encodeURIComponent(event.attend_token)}`;
+    : `${getBaseUrl()}/events/${slug}/attend?t=${encodeURIComponent(event.attend_token)}`;
   if (error) return <p className="text-red-600">{error}</p>;
   if (!event) return <p className="text-[#22343D]">Loading…</p>;
   // adding more images disabled
