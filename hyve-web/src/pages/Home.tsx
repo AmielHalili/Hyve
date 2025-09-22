@@ -1,8 +1,30 @@
+import { useEffect, useState } from 'react';
 import ScrollVelocity from './ScrollVelocity';
 import CountUp from './CountUp';
 import SplitText from '../components/SplitText';
+import { supabase } from '../lib/supabase';
+import { computeLevel } from '../lib/xp';
+
+type Leader = { id: string; full_name: string | null; xp: number };
 
 export default function Home() {
+  const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [lbLoading, setLbLoading] = useState(false);
+  const [lbErr, setLbErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      setLbLoading(true); setLbErr(null);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id,full_name,xp')
+        .order('xp', { ascending: false })
+        .limit(10);
+      setLbLoading(false);
+      if (error) { setLbErr(error.message); return; }
+      setLeaders((data ?? []).map((p: any) => ({ id: p.id, full_name: p.full_name ?? null, xp: Math.max(0, p.xp ?? 0) })));
+    })();
+  }, []);
   return (
     <div>
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -92,8 +114,75 @@ export default function Home() {
           <span className="opacity-80 text-2xl md:text-3xl">companies</span>
         </div>
       </div>
-    </div>
   </div>
+  </div>
+  {/* Networking + Build your Hyve */}
+  <section className="relative mt-0">
+    <img
+      src="/images/host.png"
+      alt="Networking background"
+      className="absolute inset-0 h-full w-full object-cover"
+      loading="lazy"
+    />
+    <div className="absolute inset-0 bg-white/70" />
+    <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-20 py-16 md:py-24">
+      <h2 className="text-3xl md:text-4xl font-semibold text-[#22343D]">Network smarter. Build your Hyve.</h2>
+      <p className="mt-3 max-w-3xl text-[#22343D]/90">
+        Meet people who share your interests, roles, and goals. Attend local meetups,
+        host your own events, and turn casual hellos into lasting connections.
+        Hyve makes it easy to discover, connect, and grow your professional circle.
+      </p>
+      <div className="mt-6 flex gap-3">
+        <a href="/events" className="px-4 py-2 rounded bg-[#22343D] text-[#FFD35C] transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#FFD35C] hover:text-[#22343D] hover:shadow-lg">Find events</a>
+        <a href="/host" className="px-4 py-2 rounded border border-[#22343D] text-[#22343D] transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#22343D] hover:text-[#FFD35C] hover:shadow-lg">Host one</a>
+      </div>
+    </div>
+  </section>
+
+  {/* Level Up CTA */}
+  <section className="bg-[#FCF6E8]">
+    <div className="max-w-6xl mx-auto px-6 md:px-20 py-14 md:py-20 text-center">
+      <h3 className="text-3xl md:text-4xl font-extrabold text-[#22343D]">Level Up and Become the Highest Connector</h3>
+      <p className="mt-3 text-[#22343D]/90">
+        Earn Buzz Points by hosting, connecting, and attending. Climb the ranks and showcase your network on the leaderboard.
+      </p>
+      <div className="mt-6 flex items-center justify-center gap-3">
+        <a href="/dashboard" className="px-4 py-2 rounded bg-[#FFD35C] text-[#22343D] transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#FFD35C] hover:shadow-lg">Track my Buzz Level</a>
+        <a href="/connections" className="px-4 py-2 rounded border border-[#22343D] text-[#22343D] transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#22343D] hover:text-[#FFD35C] hover:shadow-lg">Grow connections</a>
+      </div>
+    </div>
+  </section>
+
+  {/* Leaderboard */}
+  <section className="bg-[#FFFDF0] border-t border-[#FFD35C]/10">
+    <div className="max-w-6xl mx-auto px-6 md:px-20 py-14 md:py-20">
+      <h3 className="text-2xl md:text-3xl font-semibold text-[#22343D]">Top Connectors</h3>
+      {lbLoading && <p className="text-[#22343D] mt-3">Loading leaderboard…</p>}
+      {lbErr && <p className="text-red-600 mt-3">{lbErr}</p>}
+      {!lbLoading && !lbErr && (
+        <ol className="mt-4 grid gap-2">
+          {leaders.map((u, idx) => {
+            const info = computeLevel(u.xp);
+            return (
+              <li key={u.id} className="flex items-center justify-between p-3 rounded bg-white/70 border border-[#22343D]/10 hover:shadow-md transition-shadow">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 text-center font-bold text-[#22343D]">#{idx + 1}</span>
+                  <span className="font-medium text-[#22343D]">{u.full_name ?? 'Anonymous'}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <span className="text-sm text-[#22343D]/80">Buzz Points: {info.totalXp}</span>
+                  <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#22343D] text-[#FFD35C] font-bold">{info.level}</span>
+                </div>
+              </li>
+            );
+          })}
+          {leaders.length === 0 && (
+            <li className="text-[#22343D]/80">No data yet. Be the first to connect and host!</li>
+          )}
+        </ol>
+      )}
+    </div>
+  </section>
   </div>
   );
 }

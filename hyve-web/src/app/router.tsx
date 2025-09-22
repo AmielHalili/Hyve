@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import Home from "../pages/Home";
 import Events from "../pages/Events";
 import EventDetail from "../pages/EventDetail";
+import AttendEvent from "../pages/AttendEvent";
 import Host from "../pages/Host";
 import Dashboard from "../pages/Dashboard";
 import MyRSVPs from "../pages/MyRSVPs";
@@ -14,6 +15,8 @@ import OnboardingInterests from "../pages/OnboardingInterests";
 // import RequireAuth from "../components/RequireAuth";
 import AuthDebug from "../pages/AuthDebug";
 import Connections from "../pages/Connections";
+import FriendProfile from "../pages/FriendProfile";
+import MyAttendedEvents from "../pages/MyAttendedEvents";
 
 
 export const router = createBrowserRouter([
@@ -24,6 +27,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "events", element: <Events /> },
       { path: "events/:slug", element: <EventDetail /> },
+      { path: "events/:slug/attend", element: <AttendEvent /> },
       { path: "host", element: <Host /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "my/rsvps", element: <MyRSVPs /> },
@@ -34,6 +38,8 @@ export const router = createBrowserRouter([
       { path: "onboarding/interests", element: <OnboardingInterests /> },
       { path: "authdebug", element: <AuthDebug/>},
       { path: "connections", element: <Connections /> },
+      { path: "profile/:id", element: <FriendProfile /> },
+      { path: "my/attended", element: <MyAttendedEvents /> },
 
     ],
   },

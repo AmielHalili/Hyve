@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { supabase } from '../lib/supabase';
 
@@ -54,37 +55,37 @@ export default function Connections() {
     setPeers((cur) => cur.filter((p) => p.id !== peerId));
   }
 
-  if (!user) return <p className="text-[#FFE485]">Sign in to view connections.</p>;
+  if (!user) return <p className="text-[#22343D]">Sign in to view connections.</p>;
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4 text-[#FFD35C]">All connections</h2>
+    <div className="text-[#22343D]">
+      <h2 className="text-2xl font-semibold mb-4">All connections</h2>
       <div className="mb-4">
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search connections by name…"
-          className="w-full max-w-md px-3 py-2 rounded bg-[#2C4063] text-[#FFE485] border border-[#3A517A]"
+          className="w-full max-w-md px-3 py-2 rounded bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border border-[#22343D]/30"
         />
       </div>
-      {loading && <p className="text-[#FFE485]">Loading…</p>}
-      {error && <p className="text-red-300">{error}</p>}
+      {loading && <p>Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
       {!loading && !error && (
         <ul className="grid gap-2">
           {filtered.map((p) => (
-            <li key={p.id} className="flex items-center justify-between p-3 rounded bg-[#2C4063]">
-              <div className="flex items-center gap-3">
+            <li key={p.id} className="flex items-center justify-between p-3 rounded bg-[#FCF6E8] border border-[#22343D]/10 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+              <Link to={`/profile/${p.id}`} className="flex items-center gap-3 hover:opacity-90">
                 <div className="h-9 w-9 rounded-full bg-[#FFD35C] text-[#22343D] flex items-center justify-center font-bold">
                   {(p.full_name ?? '?').slice(0,1).toUpperCase()}
                 </div>
-                <span className="text-[#FFE485]">{p.full_name ?? 'Unknown'}</span>
-              </div>
-              <button onClick={() => disconnect(p.id)} className="px-3 py-1 rounded border border-[#FFD35C] text-[#FFD35C] hover:bg-[#FFD35C] hover:text-[#22343D]">
+                <span className="">{p.full_name ?? 'Unknown'}</span>
+              </Link>
+              <button onClick={() => disconnect(p.id)} className="px-3 py-1 rounded border border-[#22343D] text-[#22343D] transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#FFD35C] hover:shadow-lg">
                 Disconnect
               </button>
             </li>
           ))}
-          {filtered.length === 0 && <p className="text-[#FFE485]">No connections found.</p>}
+          {filtered.length === 0 && <p>No connections found.</p>}
         </ul>
       )}
     </div>

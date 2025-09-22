@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/auth";
 import { supabase } from "../lib/supabase";
 
-export default function MyRSVPs() {
+export default function MyAttendedEvents() {
   const user = useAuthStore((s) => s.user);
   const [events, setEvents] = useState<{
     id: string;
@@ -21,7 +21,7 @@ export default function MyRSVPs() {
       if (!user) { setEvents([]); return; }
       setLoading(true); setError(null);
       const { data, error } = await supabase
-        .from('event_rsvps')
+        .from('event_attendance')
         .select('events:events(id,slug,title,location,starts_at,cover_url)')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
@@ -31,11 +31,11 @@ export default function MyRSVPs() {
     })();
   }, [user?.id]);
 
-  if (!user) return <p className="text-[#22343D]">Please sign in to view your RSVPs.</p>;
+  if (!user) return <p className="text-[#22343D]">Please sign in to view attended events.</p>;
 
   return (
     <div className="text-[#22343D]">
-      <h2 className="text-2xl font-semibold mb-4">My RSVPs</h2>
+      <h2 className="text-2xl font-semibold mb-4">Attended Events</h2>
       {loading && <p>Loading…</p>}
       {error && <p className="text-red-600">{error}</p>}
       <div className="grid md:grid-cols-3 gap-4">
@@ -53,7 +53,7 @@ export default function MyRSVPs() {
           </Link>
         ))}
         {!loading && !error && events.length === 0 && (
-          <p>No RSVPs yet.</p>
+          <p>No attended events yet.</p>
         )}
       </div>
     </div>

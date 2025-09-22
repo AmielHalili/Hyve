@@ -31,16 +31,16 @@ export default function MyHostedEvents() {
     })();
   }, [user?.id]);
 
-  if (!user) return <p className="text-[#FFE485]">Please sign in to view your hosted events.</p>;
+  if (!user) return <p className="text-[#22343D]">Please sign in to view your hosted events.</p>;
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4 text-[#FFD35C]">My Hosted Events</h2>
-      {loading && <p className="text-[#FFE485]">Loading…</p>}
-      {error && <p className="text-red-400">{error}</p>}
+    <div className="text-[#22343D]">
+      <h2 className="text-2xl font-semibold mb-4">My Hosted Events</h2>
+      {loading && <p>Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
       <div className="grid md:grid-cols-3 gap-4">
         {events.map((e) => (
-          <Link to={`/events/${e.slug ?? e.id}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#2C4063]">
+          <Link to={`/events/${e.slug ?? e.id}`} key={e.id} className="border rounded-xl p-4 bg-[#FCF6E8] border-[#22343D]/10 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
             <div className="relative mb-3">
               {e.cover_url ? (
                 <img src={e.cover_url} alt="" className="aspect-video w-full object-cover rounded-lg" />
@@ -48,15 +48,14 @@ export default function MyHostedEvents() {
                 <div className="aspect-video rounded-lg bg-gray-200" />
               )}
             </div>
-            <div className="font-medium text-[#FFD35C]">{e.title}</div>
-            <div className="text-[#FFE485] text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
+            <div className="font-medium">{e.title}</div>
+            <div className="text-[#22343D]/80 text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
           </Link>
         ))}
         {!loading && !error && events.length === 0 && (
-          <p className="text-[#FFE485]">No hosted events yet. You can <Link to="/host" className="underline">create one</Link>.</p>
+          <p>No hosted events yet. You can <Link to="/host" className="underline">create one</Link>.</p>
         )}
       </div>
     </div>
   );
 }
-

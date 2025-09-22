@@ -90,23 +90,23 @@ export default function Events() {
   });
 
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4 text-[#FFD35C]">Discover</h2>
+    <div className="text-[#22343D]">
+      <h2 className="text-4xl font-semibold mb-4">Discover Events</h2>
       <div className="mb-4 grid gap-2 md:grid-cols-4">
         <input
-          className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]"
+          className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30"
           placeholder="Search by title…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <input
-          className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]"
+          className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30"
           placeholder="Filter by location…"
           value={loc}
           onChange={(e) => setLoc(e.target.value)}
         />
         <select
-          className="border rounded px-3 py-2 bg-[#2C4063] text-[#FFE485]"
+          className="border rounded px-3 py-2 bg-[#FCF6E8] text-[#22343D] border-[#22343D]/30"
           value={when}
           onChange={(e) => setWhen(e.target.value as any)}
         >
@@ -115,31 +115,25 @@ export default function Events() {
           <option value="7d">Next 7 days</option>
           <option value="month">This month</option>
         </select>
-        <div className="flex flex-wrap gap-2 items-center">
-          <span className="text-[#FFE485] text-sm">Tags:</span>
-          <div className="flex gap-2 overflow-x-auto">
-            {PREMADE_TAGS.slice(0, 10).map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTag((cur) => (cur === t ? null : t))}
-                className={`px-3 py-1 rounded-full border text-xs whitespace-nowrap ${
-                  tag === t
-                    ? "bg-[#FFD35C] text-[#22343D] border-transparent"
-                    : "text-[#FFE485] border-[#FFD35C] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
-                }`}
-              >
-                {t}
-              </button>
+        <div className="flex items-center gap-2">
+          <span className="text-[#22343D] text-sm">Tag:</span>
+          <select
+            className="border rounded px-3 py-2 bg-[#FCF6E8] text-[#22343D] border-[#22343D]/30"
+            value={tag ?? ''}
+            onChange={(e) => setTag(e.target.value || null)}
+          >
+            <option value="">All tags</option>
+            {PREMADE_TAGS.map((t) => (
+              <option key={t} value={t}>{t}</option>
             ))}
-          </div>
+          </select>
         </div>
       </div>
-      {loading && <p className="text-[#FFE485]">Loading…</p>}
-      {error && <p className="text-red-400">{error}</p>}
+      {loading && <p className="text-[#22343D]">Loading…</p>}
+      {error && <p className="text-red-600">{error}</p>}
       <div className="grid md:grid-cols-3 gap-4">
         {filtered.map((e) => (
-          <Link to={`/events/${e.slug}`} key={e.id} className="border rounded-xl p-4 hover:shadow bg-[#2C4063]">
+          <Link to={`/events/${e.slug}`} key={e.id} className="border rounded-xl p-4 bg-[#FCF6E8] border-[#22343D]/10 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:bg-[#F1E7D3]">
             <div className="relative mb-3">
               {e.cover_url ? (
                 <img src={e.cover_url} alt="" className="aspect-video w-full object-cover rounded-lg" />
@@ -150,8 +144,8 @@ export default function Events() {
                 <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-[#FFD35C] text-[#22343D] text-xs font-medium">Joined</span>
               )}
             </div>
-            <div className="font-medium text-[#FFD35C]">{e.title}</div>
-            <div className="text-[#FFE485] text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
+            <div className="font-medium text-[#22343D]">{e.title}</div>
+            <div className="text-[#22343D]/80 text-sm">{new Date(e.starts_at).toLocaleString()} · {e.location}</div>
             {e.tags?.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-1">
                 {e.tags.map((t) => (
@@ -162,7 +156,7 @@ export default function Events() {
           </Link>
         ))}
         {!loading && !error && filtered.length === 0 && (
-          <p className="text-[#FFE485]">No events yet. Be the first to <Link className="underline" to="/host">host one</Link>.</p>
+          <p className="text-[#22343D]">No events yet. Be the first to <Link className="underline" to="/host">host one</Link>.</p>
         )}
       </div>
     </div>

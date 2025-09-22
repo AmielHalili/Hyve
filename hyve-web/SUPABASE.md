@@ -115,6 +115,35 @@ create policy event_images_insert_owner on public.event_images for insert with c
 );
 ```
 
+Attendance via QR check-in
+
+- Add a check-in token to events and an attendance table.
+
+```sql
+-- Token used to verify QR check-in links
+alter table public.events add column if not exists attend_token text;
+
+-- Track attended events
+create table if not exists public.event_attendance (
+  event_id uuid not null references public.events(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (event_id, user_id)
+);
+
+alter table public.event_attendance enable row level security;
+
+-- A user can see their own attendance
+create policy if not exists att_select_own on public.event_attendance for select using (
+  auth.uid() = user_id
+);
+
+-- A user can mark themselves attended when they have the valid token flow (handled in app)
+create policy if not exists att_insert_self on public.event_attendance for insert with check (
+  auth.uid() = user_id
+);
+```
+
 Profiles and interests
 
 - profiles
@@ -142,6 +171,30 @@ drop policy if exists profiles_update_own on public.profiles;
 create policy profiles_select_own on public.profiles for select using ( id = auth.uid() );
 create policy profiles_upsert_own on public.profiles for insert with check ( id = auth.uid() );
 create policy profiles_update_own on public.profiles for update using ( id = auth.uid() );
+```
+
+Education / Work fields
+
+Add optional fields to profiles for Student/Workforce selection and details:
+
+```sql
+alter table public.profiles
+  add column if not exists role_type text check (role_type in ('student','workforce')),
+  add column if not exists student_major text,
+  add column if not exists job_category text;
+```
+
+App will upsert these via Dashboard under the “Education / Work” section.
+
+Social links
+
+Add optional social link columns to profiles. The app displays icons next to the dashboard title and allows editing in Settings.
+
+```sql
+alter table public.profiles
+  add column if not exists twitter_url text,
+  add column if not exists instagram_url text,
+  add column if not exists linkedin_url text;
 ```
 
 Onboarding flow
@@ -240,18 +293,18 @@ create policy connreq_update_recipient on public.connection_requests for update 
 );
 ```
 
-XP / Leveling System
+Buzz Points / Buzz Levels System
 
-To enable levels based on XP:
+To enable Buzz Levels based on Buzz Points (stored in the `xp` column):
 
-1) Add XP column to profiles
+1) Add Buzz Points column to profiles
 
 ```sql
 alter table public.profiles
   add column if not exists xp integer not null default 0;
 ```
 
-2) (Optional) Audit XP changes
+2) (Optional) Audit Buzz Points changes
 
 ```sql
 create table if not exists public.xp_events (
@@ -264,7 +317,7 @@ create table if not exists public.xp_events (
 create index if not exists xp_events_user_idx on public.xp_events(user_id);
 ```
 
-3) (Optional) Convenience function to award XP atomically
+3) (Optional) Convenience function to award Buzz Points atomically
 
 ```sql
 create or replace function public.award_xp(p_user uuid, p_delta integer, p_reason text)
@@ -278,11 +331,12 @@ end;
 $$;
 ```
 
-App behavior once `xp` exists:
-- New signups initialize at 50 XP (src/store/auth.tsx).
-- Hosting an event adds +50 XP (src/pages/Host.tsx) — can be swapped for `rpc('award_xp', ...)` if you added the function.
-- Dashboard shows Level and progress computed from total XP (src/lib/xp.ts and src/pages/Dashboard.tsx).
-- Accepting a connection request awards +10 XP to both users (src/pages/Dashboard.tsx).
+App behavior once `xp` (Buzz Points) exists:
+- New signups initialize at 50 Buzz Points (src/store/auth.tsx).
+- Hosting an event adds +50 Buzz Points (src/pages/Host.tsx) — can be swapped for `rpc('award_xp', ...)` if you added the function.
+- Dashboard shows Buzz Level and progress computed from total Buzz Points (src/lib/xp.ts and src/pages/Dashboard.tsx).
+- Accepting a connection request awards +10 Buzz Points to both users (src/pages/Dashboard.tsx).
+- Checking in (attending via QR) awards +25 Buzz Points on first check-in (src/pages/AttendEvent.tsx).
 
-Level rules (in code):
-- Level 1 requires 100 XP; each next level requires +25 more than the previous (L2 +125, L3 +150, …). Level is computed from total XP by summing this series.
+Buzz Level rules (in code):
+- Buzz Level 1 requires 100 Buzz Points; each next Level requires +25 more than the previous (Level 2 +125, Level 3 +150, …). Level is computed from total Buzz Points by summing this series.

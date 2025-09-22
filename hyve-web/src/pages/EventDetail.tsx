@@ -12,6 +12,8 @@ type EventRow = {
   tags: { id: string; name: string }[];
   cover_url?: string | null;
   images?: { id: string; url: string }[];
+  owner_id?: string;
+  attend_token?: string | null;
 };
 
 export default function EventDetail() {
@@ -22,6 +24,7 @@ export default function EventDetail() {
   const [hasRsvped, setHasRsvped] = useState<boolean>(false);
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -29,7 +32,7 @@ export default function EventDetail() {
       const { data, error } = await supabase
         .from("events")
         .select(
-          "id,title,description,location,starts_at,cover_url,event_tags:event_tags(tag:tags(id,name)),images:event_images(id,url)"
+          "id,title,description,location,starts_at,cover_url,owner_id,attend_token,event_tags:event_tags(tag:tags(id,name)),images:event_images(id,url)"
         )
         .eq("slug", slug)
         .single();
@@ -43,6 +46,8 @@ export default function EventDetail() {
           location: e.location,
           starts_at: e.starts_at,
           cover_url: e.cover_url,
+          owner_id: e.owner_id,
+          attend_token: e.attend_token,
           tags: (e.event_tags ?? []).map((et: any) => et?.tag).filter(Boolean) as { id: string; name: string }[],
           images: e.images ?? [],
         };
@@ -58,43 +63,63 @@ export default function EventDetail() {
     })();
   }, [slug, user?.id]);
 
-  if (error) return <p className="text-red-400">{error}</p>;
-  if (!event) return <p className="text-[#FFE485]">Loading…</p>;
+  const isOwner = !!user && event?.owner_id === user.id;
+  const attendUrl = (!slug || !event?.attend_token)
+    ? ''
+    : `${window.location.origin}/events/${slug}/attend?t=${encodeURIComponent(event.attend_token)}`;
+  if (error) return <p className="text-red-600">{error}</p>;
+  if (!event) return <p className="text-[#22343D]">Loading…</p>;
   // adding more images disabled
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 space-y-4">
-        {event.cover_url ? (
-          <img src={event.cover_url} alt="" className="aspect-video w-full object-cover rounded-xl" />
-        ) : (
-          <div className="aspect-video rounded-xl bg-[#2C4063]" />
-        )}
-        <h2 className="text-2xl font-semibold text-[#FFD35C]">{event.title}</h2>
-        <p className="text-[#FFE485]">{new Date(event.starts_at).toLocaleString()} · {event.location}</p>
-        <p className="text-[#F2F0EF]">{event.description}</p>
-        {event.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {event.tags.map((t) => (
-              <span key={t.id} className="px-3 py-1 rounded-full bg-[#FFD35C] text-[#22343D] text-xs">
-                {t.name}
-              </span>
-            ))}
+    <div className="grid lg:grid-cols-3 gap-6 text-[#22343D]">
+      <div className="lg:col-span-2">
+        <div className="border rounded-xl p-4 bg-[#FCF6E8] border-[#22343D]/10 space-y-4">
+          {event.cover_url ? (
+            <img src={event.cover_url} alt="" className="aspect-video w-full object-cover rounded-lg" />
+          ) : (
+            <div className="aspect-video rounded-lg bg-gray-200" />
+          )}
+          <div className="h-px bg-[#22343D]/10" />
+          <div>
+            <h2 className="text-2xl font-semibold">{event.title}</h2>
+            <p className="text-[#22343D]/80">{new Date(event.starts_at).toLocaleString()} · {event.location}</p>
           </div>
-        )}
-        {event.images && event.images.length > 0 && (
-          <div className="grid md:grid-cols-3 gap-3">
-            {event.images.map((img) => (
-              <img key={img.id} src={img.url} alt="Event" className="w-full h-40 object-cover rounded" />
-            ))}
-          </div>
-        )}
-        {/* Additional image uploads disabled */}
+          <div className="h-px bg-[#22343D]/10" />
+          <p className="text-[#22343D]/90">{event.description}</p>
+          {event.tags?.length > 0 && (
+            <>
+              <div className="h-px bg-[#22343D]/10" />
+              <div className="flex flex-wrap gap-2">
+                {event.tags.map((t) => (
+                  <span key={t.id} className="px-3 py-1 rounded-full bg-[#FFD35C] text-[#22343D] text-xs">
+                    {t.name}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+          {event.images && event.images.length > 0 && (
+            <>
+              <div className="h-px bg-[#22343D]/10" />
+              <div className="grid md:grid-cols-3 gap-3">
+                {event.images.map((img) => (
+                  <img key={img.id} src={img.url} alt="Event" className="w-full h-40 object-cover rounded" />
+                ))}
+              </div>
+            </>
+          )}
+          {/* Additional image uploads disabled */}
+        </div>
       </div>
-      <aside className="border rounded-xl p-4 h-fit bg-[#2C4063]">
-        <div className="text-xl font-semibold mb-2 text-[#FFD35C]">{rsvpCount} going</div>
+      <aside className="border rounded-xl p-4 h-fit bg-[#FCF6E8] border-[#22343D]/10 space-y-3">
+        <div className="text-xl font-semibold mb-2">{rsvpCount} going</div>
         <button
-          className={`w-full px-4 py-2 rounded ${hasRsvped ? 'bg-[#2C4063] border border-[#FFD35C] text-[#FFD35C]' : 'bg-[#FFD35C] text-[#2C4063]'}`}
+          className={`w-full px-4 py-2 rounded transition-colors ${
+            hasRsvped
+              ? 'bg-transparent border border-[#22343D] text-[#22343D] hover:bg-[#FFD35C]'
+              : 'bg-[#22343D] text-[#FCF6E8] hover:bg-[#FFD35C] hover:text-[#22343D]'
+          }`}
           onClick={async () => {
             if (!user) {
               navigate('/signin', { replace: false });
@@ -117,7 +142,28 @@ export default function EventDetail() {
         >
           {hasRsvped ? 'Leave RSVP' : 'RSVP'}
         </button>
-        <button className="w-full mt-2 px-4 py-2 rounded border text-[#FFD35C]">Share</button>
+        <div className="h-px bg-[#22343D]/10" />
+        <button className="w-full px-4 py-2 rounded border border-[#22343D] text-[#22343D] hover:bg-[#FFD35C] transition-colors">Share</button>
+        {isOwner && event.attend_token && (
+          <div className="mt-4">
+            <button
+              className="w-full px-4 py-2 rounded bg-[#22343D] text-[#FCF6E8] hover:bg-[#FFD35C] hover:text-[#22343D] transition-colors"
+              onClick={() => setShowQR((v) => !v)}
+            >
+              {showQR ? 'Hide' : 'Show'} Check-in QR
+            </button>
+            {showQR && (
+              <div className="mt-3 space-y-2 text-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(attendUrl)}&size=240x240`}
+                  alt="Event check-in QR"
+                  className="mx-auto rounded bg-white p-2"
+                />
+                <div className="text-xs text-[#22343D]/70 break-all">{attendUrl}</div>
+              </div>
+            )}
+          </div>
+        )}
       </aside>
     </div>
   );

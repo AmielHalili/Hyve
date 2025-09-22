@@ -23,6 +23,7 @@ export type Database = {
           owner_id: string;
           created_at: string;
           cover_url: string | null;
+          attend_token: string | null;
         };
         Insert: {
           id?: string;
@@ -34,6 +35,7 @@ export type Database = {
           owner_id: string;
           created_at?: string;
           cover_url?: string | null;
+          attend_token?: string | null;
         };
         Update: {
           id?: string;
@@ -45,6 +47,7 @@ export type Database = {
           owner_id?: string;
           created_at?: string;
           cover_url?: string | null;
+          attend_token?: string | null;
         };
         Relationships: [];
       };
@@ -128,6 +131,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      event_attendance: {
+        Row: {
+          event_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          event_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          event_id?: string;
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       user_connections: {
         Row: {
           user_id: string;
@@ -173,18 +194,39 @@ export type Database = {
           full_name: string | null;
           onboarding_complete: boolean;
           created_at: string;
+          xp: number;
+          role_type: string | null; // 'student' | 'workforce'
+          student_major: string | null;
+          job_category: string | null;
+          twitter_url: string | null;
+          instagram_url: string | null;
+          linkedin_url: string | null;
         };
         Insert: {
           id: string;
           full_name?: string | null;
           onboarding_complete?: boolean;
           created_at?: string;
+          xp?: number;
+          role_type?: string | null;
+          student_major?: string | null;
+          job_category?: string | null;
+          twitter_url?: string | null;
+          instagram_url?: string | null;
+          linkedin_url?: string | null;
         };
         Update: {
           id?: string;
           full_name?: string | null;
           onboarding_complete?: boolean;
           created_at?: string;
+           xp?: number;
+           role_type?: string | null;
+           student_major?: string | null;
+           job_category?: string | null;
+           twitter_url?: string | null;
+           instagram_url?: string | null;
+           linkedin_url?: string | null;
         };
         Relationships: [];
       };

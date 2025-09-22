@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuthStore } from "../store/auth";
 import { supabase } from "../lib/supabase";
 import { useNavigate, Link } from "react-router-dom";
@@ -23,6 +23,8 @@ export default function Host() {
   const [gallery, setGallery] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
   const toggle = (t: string) => {
     setSelected((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
@@ -80,6 +82,14 @@ export default function Host() {
           .from('profiles')
           .update({ xp: (currentXp as number) + 50 } as any)
           .eq('id', user.id);
+      } catch {}
+
+      // Generate an attendance token for QR check-in
+      try {
+        const token = Array.from(window.crypto.getRandomValues(new Uint8Array(16)))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+        await supabase.from('events').update({ attend_token: token } as any).eq('id', created.id);
       } catch {}
 
       // Upload images to Storage and update DB
@@ -145,83 +155,114 @@ export default function Host() {
 
   if (!user) {
     return (
-      <div className="max-w-xl space-y-3">
-        <h2 className="text-2xl font-semibold text-[#FFD35C]">Host an event</h2>
-        <p className="text-[#FFE485]">You must be signed in to create an event.</p>
-        <Link to="/signin" className="px-4 py-2 inline-block rounded bg-[#FFD35C] text-[#2C4063]">Sign in</Link>
+      <div className="min-h-screen bg-white text-[#22343D] flex items-center justify-center px-6">
+        <div className="w-full max-w-xl space-y-3 text-center">
+          <h2 className="text-4xl font-semibold ">Host an event</h2>
+          <p className="text-gray-600">You must be signed in to create an event.</p>
+            <Link to="/signin" className="px-4 py-2 inline-block rounded bg-[#22343D] text-[#FCF6E8] transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#FFD35C] hover:text-[#22343D] hover:shadow-lg">Sign in</Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="max-w-xl space-y-3">
-      <h2 className="text-2xl font-semibold text-[#FFD35C]">Host an event</h2>
-      <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" placeholder="Title" {...register("title", { required: true })} />
-      <div className="grid grid-cols-2 gap-3">
-        <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" type="date" {...register("date", { required: true })} />
-        <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" type="time" {...register("time", { required: true })} />
-      </div>
-      <input className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" placeholder="Location" {...register("location", { required: true })} />
-      <textarea className="border rounded px-3 py-2 w-full bg-[#2C4063] text-[#FFE485]" placeholder="Description" rows={5} {...register("description")}></textarea>
-      <div>
-        <p className="text-[#FFE485] mb-2">Select tags</p>
-        <div className="flex flex-wrap gap-2">
-          {PREMADE_TAGS.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => toggle(t)}
-              className={`px-3 py-1 rounded-full border text-sm ${
-                selected.includes(t)
-                  ? "bg-[#FFD35C] text-[#22343D] border-transparent"
-                  : "text-[#FFE485] border-[#FFD35C] hover:bg-[#FFD35C]/20 hover:text-[#FFD35C]"
-              }`}
+    <div className="min-h-screen bg-white text-[#22343D] flex items-center justify-center px-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-xl space-y-4">
+        <h2 className="text-4xl font-semibold">Host an event</h2>
+        <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30" placeholder="Title" {...register("title", { required: true })} />
+        <div className="grid grid-cols-2 gap-3">
+          <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30" type="date" {...register("date", { required: true })} />
+          <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30" type="time" {...register("time", { required: true })} />
+        </div>
+        <input className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30" placeholder="Location" {...register("location", { required: true })} />
+        <textarea className="border rounded px-3 py-2 w-full bg-[#FCF6E8] text-[#22343D] placeholder-gray-500 border-[#22343D]/30" placeholder="Description" rows={5} {...register("description")}></textarea>
+        <div>
+          <p className="text-sm mb-2">Select tags</p>
+          <div className="flex flex-wrap gap-2">
+            {PREMADE_TAGS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => toggle(t)}
+                className={`px-3 py-1 rounded-full border text-sm transition-colors ${
+                  selected.includes(t)
+                    ? "bg-[#FFD35C] text-[#22343D] border-transparent"
+                    : "text-[#22343D] border-[#FFD35C] hover:bg-[#FFD35C] hover:text-[#22343D]"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid md:grid-cols-2 gap-3">
+          <div>
+            <p className="text-sm mb-2">Cover image</p>
+            <input
+              ref={coverInputRef}
+              id="cover-upload"
+              type="file"
+              accept="image/*"
+              onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+              className="sr-only"
+            />
+            <label
+              htmlFor="cover-upload"
+              className="flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed border-[#22343D]/30 rounded-lg bg-[#FCF6E8] px-4 py-8 text-center cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
             >
-              {t}
-            </button>
-          ))}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8 text-[#22343D]"><path d="M12 3a1 1 0 01.894.553l1.447 2.894 3.196.465a1 1 0 01.554 1.706l-2.313 2.255.546 3.18a1 1 0 01-1.451 1.054L12 13.347l-2.869 1.51a1 1 0 01-1.451-1.054l.546-3.18L5.913 8.618a1 1 0 01.554-1.706l3.196-.465L11.106 3.553A1 1 0 0112 3z"/></svg>
+              <div className="text-sm">Click to upload cover image</div>
+              <div className="text-xs text-gray-600">PNG, JPG up to ~5MB</div>
+            </label>
+            {coverFile && (
+              <div className="mt-2 flex items-center gap-3">
+                <img src={URL.createObjectURL(coverFile)} alt="Preview" className="h-16 w-24 object-cover rounded border border-[#22343D]/10" />
+                <span className="text-sm">{coverFile.name}</span>
+              </div>
+            )}
+          </div>
+          <div>
+            <p className="text-sm mb-2">Gallery images</p>
+            <input
+              ref={galleryInputRef}
+              id="gallery-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                if (files.length) setGallery((prev) => [...prev, ...files]);
+                setGalleryFiles(e.target.files);
+                if (e.currentTarget) e.currentTarget.value = "";
+              }}
+              className="sr-only"
+            />
+            <label
+              htmlFor="gallery-upload"
+              className="flex flex-col items-center justify-center gap-2 w-full border-2 border-dashed border-[#22343D]/30 rounded-lg bg-[#FCF6E8] px-4 py-8 text-center cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 text-[#22343D]"><path d="M4 5a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2H4zm3 4a2 2 0 114 0 2 2 0 01-4 0zm-3 8l4.5-5 3.5 4.2L15.5 13 21 17H4z"/></svg>
+              <div className="text-sm">Click to add gallery images</div>
+              <div className="text-xs text-gray-600">You can select multiple files</div>
+            </label>
+            {gallery.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {gallery.map((f, i) => (
+                  <span key={`${f.name}-${i}`} className="flex items-center gap-2 px-2 py-1 rounded bg-white text-[#22343D] text-xs border border-[#22343D]/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M4 5a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2H4zm3 4a2 2 0 114 0 2 2 0 01-4 0zm-3 8l4.5-5 3.5 4.2L15.5 13 21 17H4z"/></svg>
+                    <span className="truncate max-w-[12rem]">{f.name}</span>
+                    <button type="button" onClick={() => setGallery((prev) => prev.filter((_, idx) => idx !== i))} className="text-gray-500">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="grid md:grid-cols-2 gap-3">
-        <div>
-          <p className="text-[#FFE485] mb-2">Cover image</p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
-            className="block w-full text-sm text-[#FFE485] file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-[#22343D] file:bg-[#FFD35C] file:cursor-pointer"
-          />
-        </div>
-        <div>
-          <p className="text-[#FFE485] mb-2">Gallery images</p>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => {
-              const files = Array.from(e.target.files ?? []);
-              if (files.length) setGallery((prev) => [...prev, ...files]);
-              setGalleryFiles(e.target.files);
-              e.currentTarget.value = "";
-            }}
-            className="block w-full text-sm text-[#FFE485] file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-[#22343D] file:bg-[#FFD35C] file:cursor-pointer"
-          />
-          {gallery.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {gallery.map((f, i) => (
-                <span key={`${f.name}-${i}`} className="flex items-center gap-2 px-2 py-1 rounded bg-[#2C4063] text-[#FFE485] text-xs">
-                  {f.name}
-                  <button type="button" onClick={() => setGallery((prev) => prev.filter((_, idx) => idx !== i))} className="text-red-300">×</button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      {errorMsg && <p className="text-red-300 text-sm">{errorMsg}</p>}
-      <button disabled={submitting} className="px-4 py-2 rounded bg-[#FFD35C] text-[#2C4063] disabled:opacity-60">
-        {submitting ? "Creating…" : "Create event"}
-      </button>
-    </form>
+        {errorMsg && <p className="text-red-600 text-sm">{errorMsg}</p>}
+           <button disabled={submitting} className="px-4 py-2 rounded bg-[#22343D] text-[#FCF6E8] disabled:opacity-60 transition-all duration-300 transform hover:-translate-y-1 hover:bg-[#FFD35C] hover:text-[#22343D] hover:shadow-lg">
+             {submitting ? "Creating…" : "Create event"}
+           </button>
+      </form>
+    </div>
   );
 }
